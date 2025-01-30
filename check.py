@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters,
@@ -20,11 +21,11 @@ REGISTERED_USERS_FILE = "registered_users.json"
 CONTENT_FILE = "content.json"
 
 # ID администраторов
-ADMIN_IDS = {785773730}
+ADMIN_IDS = {785773730, 755365654}
 
 # Главное меню
 REGISTERED_MENU = ReplyKeyboardMarkup(
-    [["Об организаторах", "Программа мероприятия"], ["Спонсоры", "Участники"]],
+    [["Информация о мероприятии", "Программа мероприятия"]],
     resize_keyboard=True
 )
 
@@ -37,6 +38,14 @@ UNREGISTERED_MENU = ReplyKeyboardMarkup(
 ENTER_ORGANIZATION, ENTER_NAME, ENTER_PHONE = range(3)
 # Шаги для добавления гостя
 ENTER_GUEST_ORGANIZATION, ENTER_GUEST_NAME, ENTER_GUEST_PHONE = range(3)
+
+
+def read_text_file(file_path):
+    """Читает содержимое текстового файла и возвращает его."""
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as file:
+            return file.read()
+    return "Файл с информацией не найден."
 
 # Загрузка и сохранение данных
 def load_data(file_name):
@@ -51,6 +60,14 @@ def save_data(file_name, data):
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 registered_users = load_data(REGISTERED_USERS_FILE)
+
+async def about_event_plan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    text = read_text_file("about_event.txt")
+    await update.message.reply_text(text,parse_mode="HTML", protect_content=True)
+
+async def event_program(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    text = read_text_file("event_program.txt")
+    await update.message.reply_text(text, protect_content=True)
 
 # Команды и обработчики
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -71,7 +88,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def about_event(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "День Культуры Азербайджана: познакомьтесь с богатой культурой и традициями Азербайджана. "
-        "Дата: 1 февраля 2025 года, место: Центр конференций.",
+        "Дата: 12 февраля 2025 года, место: Центр конференций.",
         protect_content=True
     )
 
@@ -419,10 +436,13 @@ def main():
     app.add_handler(registration_handler)
     app.add_handler(MessageHandler(filters.Regex("^О мероприятии$"), about_event))
     app.add_handler(CommandHandler("broadcast", broadcast_message))
+    app.add_handler(MessageHandler(filters.Regex("^Информация о мероприятии$"), about_event_plan))
+    app.add_handler(MessageHandler(filters.Regex("^Программа мероприятия$"), event_program))
+
+
 
     logger.info("Бот запущен...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
-
