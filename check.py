@@ -88,7 +88,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def about_event(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "День Культуры Азербайджана: познакомьтесь с богатой культурой и традициями Азербайджана. "
-        "Дата: 12 февраля 2025 года, место: Центр конференций.",
+        "Дата: 29 мая 2025 года, место: Центр конференций.",
         protect_content=True
     )
 
